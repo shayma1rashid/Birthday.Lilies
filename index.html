@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#04020a">
+<title>Birthday Protocol</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="lily"></canvas>
+
+<main class="screen">
+  <div class="top">
+    <span><i class="dot"></i> SYSTEM ONLINE</span>
+    <span>BDAY_PROTOCOL.exe</span>
+  </div>
+  <div class="rule"></div>
+
+  <section class="terminal" aria-label="System messages">
+    <div id="typed"></div><span class="cursor"></span>
+  </section>
+
+  <div class="rule"></div>
+  <section id="countSection">
+    <div class="label">FAJOORA IS TURNING 21 IN</div>
+    <div class="countdown" aria-live="off">
+      <div><div class="number" id="days">000</div><div class="unit">DAYS</div></div>
+      <div><div class="number" id="hours">00</div><div class="unit">HOURS</div></div>
+      <div><div class="number" id="minutes">00</div><div class="unit">MINUTES</div></div>
+      <div><div class="number" id="seconds">00</div><div class="unit">SECONDS</div></div>
+    </div>
+    <div class="target">BE HERE AT 00:00</div>
+  </section>
+
+  <section class="complete" id="complete">
+    <div> [ COUNTDOWN COMPLETE ] </div>
+    <strong> AWAITING NEXT COMMAND </strong>
+    <div> SYSTEM STATUS: LOCKED </div>
+  </section>
+
+  <div class="footer">
+    <span>SECURE CONNECTION</span>
+    <span id="clock">LOCAL TIME --:--:--</span>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
