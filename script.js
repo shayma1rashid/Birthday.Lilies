@@ -2,7 +2,7 @@
 // للتجربة: افتح الصفحة بـ ?in=15 ليبدأ العد من 15 ثانية فقط
 const testSec = parseFloat(new URLSearchParams(location.search).get("in"));
 const target = isNaN(testSec)
-  ? new Date(2026, 10, 6, 22, 10, 0, 0)   // iPad's local time
+  ? new Date(2026, 10, 8, 13, 20, 0, 0)   // iPad's local time
   : new Date(Date.now() + testSec * 1000);
 
 const pad = n => String(n).padStart(2, "0");
