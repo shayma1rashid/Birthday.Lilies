@@ -56,3 +56,14 @@
   body.bloom::before { opacity: 0; }                 /* خطوط الشاشة تختفي مع الانتقال */
   .screen { z-index: 2; transition: opacity 0.9s ease; }
   .screen.leaving { opacity: 0; pointer-events: none; }
+
+/* ===== مشهد الخريطة ===== */
+#mapui { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none;
+  font-family: "SFMono-Regular",Consolas,"Liberation Mono",monospace; }
+.maplabel { position: absolute; transform: translate(-50%, 0); margin-top: 20px; opacity: 0; white-space: nowrap;
+  font-size: 11px; letter-spacing: 3px; color: #ffa5ce; text-shadow: 0 0 8px rgba(255,120,190,.6); }
+.tapprompt { position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); opacity: 0; text-align: center;
+  width: 100%; padding: 0 16px; font-size: clamp(12px,2.5vw,14px); line-height: 2; letter-spacing: 2px;
+  color: #8bffaf; text-shadow: 0 0 8px rgba(103,255,154,.55); }
+.tapprompt .taphint { color: #ffa5ce; letter-spacing: 3px; text-shadow: 0 0 8px rgba(255,120,190,.6);
+  animation: blink 1.4s steps(2) infinite; }
