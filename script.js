@@ -13,7 +13,7 @@ const messages = [
   "> INITIALISING BIRTHDAY PROTOCOL...",
   "> TARGET: BIRTHDAY GIRL",
   "> LOCATION: LIVERPOOL, UK",
-  "> SNIPER: Shayma XOXO",
+  "> SNIPER: SHAYMA#XOXO",
   "> SURPRISE: IN PROGRESS..."
 ];
 let bloomTriggered = false;  
