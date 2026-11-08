@@ -4,7 +4,7 @@ const testSec = parseFloat(new URLSearchParams(location.search).get("in"));
 
 // ╚══════════════════════════════════════════════════════════════════╝
 const target = isNaN(testSec)
-  ? new Date(2026, 10, 8, 21, 20, 0, 0)  
+  ? new Date(2026, 10, 8, 21, 40, 0, 0)  
   : new Date(Date.now() + testSec * 1000);
 
 const pad = n => String(n).padStart(2, "0");
