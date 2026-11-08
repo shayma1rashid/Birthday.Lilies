@@ -1,8 +1,10 @@
 /* ============ العداد + الانتقال إلى الوردة ============ */
 // للتجربة: افتح الصفحة بـ ?in=15 ليبدأ العد من 15 ثانية فقط
 const testSec = parseFloat(new URLSearchParams(location.search).get("in"));
+
+// ╚══════════════════════════════════════════════════════════════════╝
 const target = isNaN(testSec)
-  ? new Date(2026, 10, 6, 20, 50, 0, 0)   // iPad's local time
+  ? new Date(2026, 10, 8, 21, 20, 0, 0)  
   : new Date(Date.now() + testSec * 1000);
 
 const pad = n => String(n).padStart(2, "0");
@@ -11,17 +13,19 @@ const messages = [
   "> INITIALISING BIRTHDAY PROTOCOL...",
   "> TARGET: BIRTHDAY GIRL",
   "> LOCATION: LIVERPOOL, UK",
-  "> SNIPER: UNDETECTED",
+  "> SNIPER: SHAYMA#XOXO",
   "> SURPRISE: IN PROGRESS..."
 ];
+let bloomTriggered = false;  
 let messageIndex = 0, charIndex = 0;
 function typeNext() {
-  if (messageIndex >= messages.length) return;
+  if (bloomTriggered || messageIndex >= messages.length) return;
   const line = document.createElement("div");
   line.className = "line";
   typed.appendChild(line);
   const current = messages[messageIndex];
   const timer = setInterval(() => {
+    if (bloomTriggered) { clearInterval(timer); return; }  
     line.textContent = current.slice(0, ++charIndex);
     if (charIndex >= current.length) {
       clearInterval(timer);
@@ -32,10 +36,9 @@ function typeNext() {
 }
 typeNext();
 
-// الانتقال: تبقى رسالة COUNTDOWN COMPLETE ثانيتين تقريباً، ثم تتلاشى الشاشة وتنبت الوردة
-const HOLD_COMPLETE_MS = 2200;   // مدة بقاء رسالة النهاية قبل الانتقال
-const FADE_OUT_MS = 2000;        // مدة تلاشي الشاشة
-let bloomTriggered = false;
+// الانتقال: لحظة وصول الوقت يبدأ الصندوق بالاختفاء فوراً وبدون أي تغيير داخله، وتنبت الوردة
+const HOLD_COMPLETE_MS = 0;      // تأخير قبل بدء الاختفاء بالميلي ثانية (0 = فوراً)
+const FADE_OUT_MS = 900;         // مدة اختفاء الصندوق (يجب أن تطابق transition في style.css)
 function triggerBloom() {
   if (bloomTriggered) return;
   bloomTriggered = true;
@@ -43,19 +46,23 @@ function triggerBloom() {
     const sc = document.querySelector(".screen");
     document.body.classList.add("bloom");
     sc.classList.add("leaving");
-    if (window.Lily) window.Lily.start();
+    if (window.Lily) window.Lily.showMap();
     setTimeout(() => { sc.style.display = "none"; }, FADE_OUT_MS);
   }, HOLD_COMPLETE_MS);
 }
 
 function update() {
+  if (bloomTriggered) return;   // بعد وصول الوقت لا يتغير أي شيء داخل الصندوق
   const now = new Date();
   document.getElementById("clock").textContent =
     `LOCAL TIME ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   const remaining = target - now;
   if (remaining <= 0) {
-    document.getElementById("countSection").style.display = "none";
-    document.getElementById("complete").classList.add("show");
+    // يبقى العداد على أصفار ويبدأ الصندوق بالاختفاء كما هو
+    document.getElementById("days").textContent = "000";
+    document.getElementById("hours").textContent = "00";
+    document.getElementById("minutes").textContent = "00";
+    document.getElementById("seconds").textContent = "00";
     triggerBloom();
     return;
   }
@@ -80,14 +87,17 @@ setInterval(update, 250);
   /* ================= الإعدادات ================= */
   var T_STEM = 4.0;                 // مدة نمو الساق
   var T_B0 = 5.0, T_B1 = 15.0;      // بداية ونهاية تفتّح الزهرة
-  var START_T = -1.0;               // زمن الوردة قبل البدء (سالب = تأخير قبل ظهور التربة والساق)
+  var START_T = -0.5;               // زمن الوردة قبل البدء (سالب = تأخير قبل ظهور التربة والساق)
   var LOOP_AT = 0;                  // 0 = بدون تكرار
   var MAX_DIM = 1280;               // أقصى دقة داخلية (قلّلها لو أردت أداءً أخف)
   var TAP_TO_RESTART = false;       // نقرتان سريعتان = إعادة التشغيل (بعد ظهور الوردة)
   var BG = [4, 2, 10];
   var GREETING = "Happy Birthday!"; // نص التهنئة (يظهر مقوّساً فوق الوردة)
-  var T_TEXT = T_B1 - 7;           // وقت بدء ظهور النص (بعد اكتمال التفتّح)
-  var TEXT_FONT = '"Marker Felt","Chalkboard SE","Comic Sans MS","Trebuchet MS",sans-serif';
+  var T_TEXT = T_B1 - 7;          // وقت بدء ظهور النص (بعد اكتمال التفتّح)
+  var TEXT_FONT = '"Snell Roundhand","Brush Script MT",cursive';
+  var MAP_HEART_DELAY = 2.6;        // ثواني بعد ظهور الخريطة قبل أن ينطلق القلب
+  var MAP_TRAVEL = 4.8;             // مدة سفر القلب من مانشستر إلى ليفربول
+  var MAP_OUT = 0.9;                // مدة اختفاء الخريطة بعد الضغط
 
   /* ================= أدوات ================= */
   var canvas = document.getElementById('lily');
@@ -122,7 +132,6 @@ setInterval(update, 250);
     return ys[i - 1] + (ys[i] - ys[i - 1]) * t;
   }
 
-  /* العرق الوسطي للورقة/البتلة */
   var K = 40;
   var RIB_R = new Float64Array(K + 1), RIB_H = new Float64Array(K + 1);
   function midrib(L, a0, curl) {
@@ -142,7 +151,6 @@ setInterval(update, 250);
     return arr[i] + (arr[i + 1] - arr[i]) * (f - i);
   }
 
-  /* ================= البيانات (تُبنى عند تغيّر الحجم) ================= */
   var W = 0, H = 0, S = 1, gx = 0, gy = 0, HS = 0;
   var img, img32, imgBytes;
   var smallCanvas = document.createElement('canvas');
@@ -150,7 +158,7 @@ setInterval(update, 250);
   var simg, SW = 0, SH = 0;
 
   var petals, leaves, stam;
-  var NP = 2300, NS = 3200, NG = 5000, ND = 450, NF = 140, NRING = 1100;
+  var NP = 2300, NS = 3200, NG = 5000, ND = 500, NF = 140, NRING = 1100;
   var st_s, st_dx, st_col;
   var so_dx, so_y, so_col;
   var d_x, d_y, d_sp, d_ph, d_f;
@@ -172,7 +180,6 @@ setInterval(update, 250);
     gx = W / 2; gy = H * 0.82; HS = 380 * S;
     var i, k;
 
-    // البتلات
     petals = [];
     var stops = [0, 0.35, 0.7, 1];
     var cR = [205, 255, 255, 255], cG = [40, 95, 150, 195], cB = [125, 165, 205, 228];
@@ -205,7 +212,6 @@ setInterval(update, 250);
       });
     }
 
-    // الساق (نقاط إضافية)
     st_s = new Float32Array(NS); st_dx = new Float32Array(NS); st_col = new Float32Array(NS * 3);
     for (i = 0; i < NS; i++) st_s[i] = rand();
     for (i = 0; i < NS; i++) {
@@ -281,6 +287,7 @@ setInterval(update, 250);
     }
 
     buildText();
+    buildMap();
   }
 
   /* نص التهنئة: يُحوَّل إلى نقاط موزّعة على نصف دائرة فوق الزهرة */
@@ -342,6 +349,172 @@ setInterval(update, 250);
     tr_ = new Float32Array(cr); tg_ = new Float32Array(cg); tb_ = new Float32Array(cb);
   }
 
+  /* ================= مشهد الخريطة: قلب صغير من مانشستر إلى ليفربول ================= */
+    var scene = 'idle', mt = 0, ot = 0;        // idle → map → out → done
+  var TAP_AT = MAP_HEART_DELAY + MAP_TRAVEL + 0.6;   // متى تظهر عبارة "اضغطي على القلب"
+  var MAN = [53.4808, -2.2426], LIV = [53.4084, -2.9916];   // [خط العرض، خط الطول]
+  var pxLat = 1, sm = 1;
+  var hh_x, hh_y, hh_f, bs_a, bs_r;
+  var Mx = 0, My = 0, Lx = 0, Ly = 0, Cx = 0, Cy = 0, pathLen = 1, bzx = 0, bzy = 0;
+  var mapUi = document.getElementById('mapui');
+  var lblMan = document.getElementById('lbl-man');
+  var lblLiv = document.getElementById('lbl-liv');
+  var tapEl = document.getElementById('tapprompt');
+    var tp1 = document.getElementById('tp1'), tp2 = document.getElementById('tp2'), cur1 = document.getElementById('cur1'), cur2 = document.getElementById('cur2');
+  // رسالة الوصول تُكتب حرفاً حرفاً مثل التيرمنال (غيّر النصوص والسرعة من هنا)
+  var TP_LINE1 = '> LOVE: DELIVERED';
+  var TP_LINE2 = '[ TAP THE HEART ]';
+  var TP_CHAR = 0.045;               // ثواني لكل حرف (نفس سرعة التيرمنال)
+  var TP_GAP = 0.42;                 // توقف بين السطرين
+  var TP_DONE = TAP_AT + (TP_LINE1.length + TP_LINE2.length) * TP_CHAR + TP_GAP;  // متى تكتمل الكتابة
+  var uiClean = false;
+
+  function project(lat, lon) { return [W * (lon + 3.6) / 2.0, H * 0.45 - (lat - 53.45) * pxLat]; }
+  function bez(u) {
+    var v = 1 - u;
+    bzx = v * v * Mx + 2 * v * u * Cx + u * u * Lx;
+    bzy = v * v * My + 2 * v * u * Cy + u * u * Ly;
+  }
+
+  function buildMap() {
+    pxLat = W / (2.0 * Math.cos(53.45 * Math.PI / 180));
+    sm = W / 720;
+    var i;
+
+    // شكل القلب (نقاط داخل المنحنى الضمني)
+    var hx = [], hy = [], hf = [];
+    while (hx.length < 420) {
+      var qx = rand() * 2.5 - 1.25, qy = rand() * 2.45 - 1.15;
+      var qa = qx * qx + qy * qy - 1;
+      if (qa * qa * qa - qx * qx * qy * qy * qy <= 0) { hx.push(qx); hy.push(qy); hf.push(0.8 + 0.4 * rand()); }
+    }
+    hh_x = new Float32Array(hx); hh_y = new Float32Array(hy); hh_f = new Float32Array(hf);
+    bs_a = new Float32Array(60); bs_r = new Float32Array(60);
+    for (i = 0; i < 60; i++) { bs_a[i] = rand() * 6.28; bs_r[i] = rand(); }
+
+    // المدينتان والمسار (قوس يميل للشمال)
+    var m = project(MAN[0], MAN[1]), l = project(LIV[0], LIV[1]);
+    Mx = m[0]; My = m[1]; Lx = l[0]; Ly = l[1];
+    var dist = Math.hypot(Lx - Mx, Ly - My);
+    Cx = (Mx + Lx) / 2; Cy = (My + Ly) / 2 - 0.35 * dist;
+    pathLen = 0;
+    var px = Mx, py = My;
+    for (i = 1; i <= 40; i++) {
+      bez(i / 40);
+      pathLen += Math.hypot(bzx - px, bzy - py); px = bzx; py = bzy;
+    }
+    if (lblMan) { lblMan.style.left = (Mx / W * 100) + '%'; lblMan.style.top = (My / H * 100) + '%'; }
+    if (lblLiv) { lblLiv.style.left = (Lx / W * 100) + '%'; lblLiv.style.top = (Ly / H * 100) + '%'; }
+  }
+
+  function drawMap() {
+    var fo = (scene === 'out') ? 1 - smooth(ot / MAP_OUT) : 1;
+    if (fo <= 0.01 || !hh_x) return;
+    var i, k, f;
+
+    // علامتا المدينتين
+    var ma = smooth((mt - 1.0) / 0.8) * fo;
+    if (ma > 0.01) {
+      var rr = 7 * sm * (1 + 0.12 * Math.sin(clk * 3));
+      for (var c = 0; c < 2; c++) {
+        var ccx = c ? Lx : Mx, ccy = c ? Ly : My;
+        for (i = 0; i < 36; i++) {
+          var an = i * Math.PI / 18;
+          add(ccx + rr * Math.cos(an), ccy + rr * Math.sin(an), -770, 103 * ma, 255 * ma, 154 * ma);
+        }
+        add(ccx, ccy, -770, 200 * ma, 255 * ma, 220 * ma);
+        add(ccx + 1, ccy, -770, 200 * ma, 255 * ma, 220 * ma);
+        add(ccx, ccy + 1, -770, 200 * ma, 255 * ma, 220 * ma);
+      }
+    }
+
+    // القلب وخط التتبع
+    var hAp = smooth((mt - 1.6) / 0.6) * fo;
+    if (hAp > 0.01) {
+      var prog = smooth((mt - MAP_HEART_DELAY) / MAP_TRAVEL);
+      var ntr = Math.min(260, Math.floor(prog * pathLen / 3));
+      for (i = 0; i <= ntr; i++) {
+        f = ntr ? i / ntr : 0;
+        bez(prog * f);
+        k = (0.20 + 0.60 * Math.pow(f, 2.2)) * hAp;
+        add(bzx + Math.sin(i * 12.9 + clk * 2) * 0.8, bzy + Math.cos(i * 7.3 + clk * 2) * 0.8,
+            -780, 255 * k, 125 * k, 170 * k);
+      }
+      bez(prog);
+      var arrived = mt > MAP_HEART_DELAY + MAP_TRAVEL;
+      var hx0 = bzx, hy0 = bzy + ((prog > 0 && prog < 1) ? Math.sin(clk * 5) * 2 * sm : 0);
+      var beat = Math.pow(Math.max(0, Math.sin(clk * (arrived ? 6 : 7))), 6) * (arrived ? 0.28 : 0.18);
+      var hs = 15 * sm * (1 + beat);
+      for (i = 0; i < hh_x.length; i++) {
+        k = hAp * hh_f[i];
+        add(hx0 + hh_x[i] * hs, hy0 - hh_y[i] * hs, -700,
+            255 * k, (50 + 30 * hh_f[i]) * k, (80 + 30 * hh_f[i]) * k);
+      }
+
+      // عند الوصول: موجات وشرارات حول ليفربول
+      if (arrived) {
+        var tau = mt - (MAP_HEART_DELAY + MAP_TRAVEL);
+        for (var q = 0; q < 2; q++) {
+          var ph = ((tau * 0.5) + q * 0.5) % 1;
+          var rad = ph * 90 * sm, ra = (1 - ph) * 0.8 * fo;
+          for (i = 0; i < 64; i++) {
+            var an2 = i * Math.PI / 32;
+            add(Lx + rad * Math.cos(an2), Ly + rad * Math.sin(an2), -760, 255 * ra, 90 * ra, 130 * ra);
+          }
+        }
+        if (tau < 1.4) {
+          var ba = (1 - tau / 1.4) * fo;
+          for (i = 0; i < 60; i++) {
+            var rb = tau * 70 * sm * (0.4 + bs_r[i]);
+            add(Lx + rb * Math.cos(bs_a[i]), Ly + rb * Math.sin(bs_a[i]), -750, 255 * ba, 190 * ba, 120 * ba);
+          }
+        }
+      }
+    }
+  }
+
+  function updateMapUi() {
+    if (!mapUi || scene === 'idle') return;
+    if (scene === 'done') {
+      if (!uiClean) {
+        uiClean = true;
+        lblMan.style.opacity = 0; lblLiv.style.opacity = 0; tapEl.style.opacity = 0;
+      }
+      return;
+    }
+    var fo = (scene === 'out') ? 1 - smooth(ot / MAP_OUT) : 1;
+    var la = smooth((mt - 1.0) / 0.8) * fo;
+    lblMan.style.opacity = la; lblLiv.style.opacity = la;
+        // كتابة الرسالة بحرف حرف
+    var tt = mt - TAP_AT;
+    if (tt < 0) { tapEl.style.opacity = 0; return; }
+    tapEl.style.opacity = fo;
+    var n1 = Math.min(TP_LINE1.length, Math.floor(tt / TP_CHAR));
+    var n2 = Math.max(0, Math.min(TP_LINE2.length, Math.floor((tt - TP_LINE1.length * TP_CHAR - TP_GAP) / TP_CHAR)));
+    var s1 = TP_LINE1.slice(0, n1), s2 = TP_LINE2.slice(0, n2);
+    if (tp1.textContent !== s1) tp1.textContent = s1;
+    if (tp2.textContent !== s2) tp2.textContent = s2;
+    var onLine2 = tt > TP_LINE1.length * TP_CHAR + TP_GAP;     // المؤشر ينتقل للسطر الثاني
+    cur1.style.display = onLine2 ? 'none' : 'inline-block';
+    cur2.style.display = onLine2 ? 'inline-block' : 'none';
+    if (n2 >= TP_LINE2.length) {                       // انتهت الكتابة: السطر الثاني يومض
+      if (tp2.className !== 'taphint') tp2.className = 'taphint';
+    }
+  }
+
+  function showMap() { if (scene === 'idle') { scene = 'map'; mt = 0; } }
+  function startBloom() { running = true; }
+
+  // الضغط بعد وصول القلب: تختفي الخريطة وتنبت الوردة
+  document.addEventListener('pointerup', function (ev) {
+    if (scene !== 'map' || mt <= TP_DONE) return;
+    var rc = canvas.getBoundingClientRect();
+    var k = W / (rc.width || W);
+    var px = (ev.clientX - rc.left) * k, py = (ev.clientY - rc.top) * k;
+    var hitR = Math.max(70, 40 * k);          // منطقة الضغط حول القلب (سخيّة للمس)
+    if (Math.hypot(px - Lx, py - Ly) <= hitR) { scene = 'out'; ot = 0; startBloom(); }
+  });
+
   function stemX(s, t) {
     var sway = 10 * S * Math.sin(0.9 * t);
     return gx + 30 * S * Math.sin(2.2 * s) + sway * s * s;
@@ -365,9 +538,18 @@ setInterval(update, 250);
 
     // غبار متلألئ (الخلفية)
     for (i = 0; i < ND; i++) {
-      var tw = 0.35 + 0.65 * (Math.sin(clk * d_f[i] + d_ph[i]) > 0.2 ? 1 : 0);
+          var sn = 0.5 + 0.5 * Math.sin(clk * d_f[i] + d_ph[i]);   // لمعان ناعم 0..1
+      var tw = 0.25 + 0.75 * sn * sn;
       var yy = (d_y[i] - clk * d_sp[i]) % H; if (yy < 0) yy += H;
-      add(d_x[i], yy, -1000, 255 * tw * 0.55, 200 * tw * 0.55, 235 * tw * 0.55);
+      var cr = 255 * tw, cg = 215 * tw, cb = 245 * tw;
+      add(d_x[i], yy, -1000, cr, cg, cb);
+      if (d_f[i] > 2.2) {                       // النجوم الأكبر: صليب صغير يكبّرها ويزيد توهجها
+        var sz = (d_f[i] > 3.3 ? 3 : 2) * S;
+        add(d_x[i] + sz, yy, -1000, cr * 0.7, cg * 0.7, cb * 0.7);
+        add(d_x[i] - sz, yy, -1000, cr * 0.7, cg * 0.7, cb * 0.7);
+        add(d_x[i], yy + sz, -1000, cr * 0.7, cg * 0.7, cb * 0.7);
+        add(d_x[i], yy - sz, -1000, cr * 0.7, cg * 0.7, cb * 0.7);
+      }
     }
 
     // الهالة
@@ -511,13 +693,15 @@ setInterval(update, 250);
     if (t > T_TEXT && tx_) {
       var tcy = hy - 90 * S;
       for (i = 0; i < tx_.length; i++) {
-        var lal = smooth((t - T_TEXT - tl_[i] * 0.18) / 0.9);
+        var lal = smooth((t - T_TEXT - tl_[i] * 0.22) / 0.9);
         if (lal <= 0.01) continue;
         var tk = lal * (0.85 + 0.15 * Math.sin(t * 3 + tph_[i]));
         var bob = 3 * S * Math.sin(t * 1.5 + tl_[i] * 0.5);
         add(hx + tx_[i], tcy + ty_[i] + bob, 250, tr_[i] * tk, tg_[i] * tk, tb_[i] * tk);
       }
     }
+
+    if (scene === 'map' || scene === 'out') drawMap();
 
     // فرز حسب العمق (فرز عدّي سريع) ثم الكتابة في الصورة
     var j, c;
@@ -599,6 +783,8 @@ setInterval(update, 250);
     var dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
     last = now;
     clk += dt;                                   // الخلفية تتحرك دائماً
+    if (scene === 'map') mt += dt;
+    else if (scene === 'out') { ot += dt; if (ot >= MAP_OUT) scene = 'done'; }
     if (running && !paused) {                    // الوردة تبدأ فقط عند نهاية العد
       t += dt;
       if (LOOP_AT && t > LOOP_AT) t = START_T;
@@ -606,6 +792,7 @@ setInterval(update, 250);
     render(t, clk);
     ctx.putImageData(img, 0, 0);
     glow();
+    updateMapUi();
   }
 
   function start() {
@@ -630,11 +817,12 @@ setInterval(update, 250);
 
   // واجهة للتحكم: Lily.start() تبدأ نمو الوردة (يستدعيها العداد تلقائياً)
   window.Lily = {
-    start: function () { running = true; },
+    showMap: showMap,
+    start: startBloom,
     restart: function () { t = START_T; running = true; },
     pause: function () { paused = true; },
     resume: function () { paused = false; },
-    seek: function (sec) { t = sec; running = true; }
+    seek: function (sec) { t = sec; running = true; scene = 'done'; }
   };
 
   start();
